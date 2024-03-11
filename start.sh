@@ -6,9 +6,4 @@ apt install chromium-chromedriver &> /dev/null &&
 cp /usr/lib/chromium-browser/chromedriver /usr/bin &> /dev/null &&
 
 python get_list_videos.py
-python cay_4k_view_youtube.py &
-python cay_4k_view_youtube.py &
-python cay_4k_view_youtube.py &
-
-wait
-echo "Tất cả các công việc đã hoàn thành."
+python cay_4k_view_youtube.py
