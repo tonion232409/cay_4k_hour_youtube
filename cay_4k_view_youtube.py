@@ -56,7 +56,7 @@ while True:
             play_e = play_element.get_attribute("data-title-no-tooltip")
             play_e = play_e.lower()
             print("lấy thành công element", play_e)
-            if play_e == "play":
+            if play_e == "play" or play_e == "afspelen":
                 action_chains = ActionChains(browser)
                 action_chains.send_keys(Keys.NULL, 'k')  # Keys.NULL để tránh hiệu ứng của SPACE
                 action_chains.perform()
@@ -74,7 +74,7 @@ while True:
                 play_e = play_element.get_attribute("data-title-no-tooltip")
                 play_e = play_e.lower()
                 print("lấy thành công element", play_e)
-                if play_e == "play":
+                if play_e == "play" or play_e == "afspelen":
                     action_chains = ActionChains(browser)
                     action_chains.send_keys(Keys.NULL, 'k')  # Keys.NULL để tránh hiệu ứng của SPACE
                     action_chains.perform()
@@ -98,7 +98,7 @@ while True:
                 play_e = play_element.get_attribute("data-title-no-tooltip")
                 play_e = play_e.lower()
                 print("lấy thành công element", play_e)
-                if play_e == "play":
+                if play_e == "play" or play_e == "afspelen":
                     action_chains = ActionChains(browser)
                     action_chains.send_keys(Keys.NULL, 'k')  # Keys.NULL để tránh hiệu ứng của SPACE
                     action_chains.perform()
