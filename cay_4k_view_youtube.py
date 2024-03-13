@@ -100,7 +100,7 @@ def main():
 if __name__ == "__main__":
     threads = []
 
-    for _ in range(5):
+    for _ in range(1):
         thread = threading.Thread(target=main)
         threads.append(thread)
         thread.start()
