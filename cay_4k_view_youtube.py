@@ -48,15 +48,17 @@ def main():
     options.add_argument('--headless')  # Chạy trình duyệt ẩn danh (tùy chọn có thể bật nếu cần)
     options.add_argument('--no-sandbox')  # Chạy trong môi trường không có sandbox
     options.add_argument('--disable-dev-shm-usage')  # Tắt việc sử dụng bộ nhớ chia sẻ
-    browser = webdriver.Chrome(options=options)
+    
     while True:
+        browser = webdriver.Chrome(options=options)
         videoIndex = (videoIndex + 1) % int(NUMBER_OF_VIDEO)
         url = listVideo[videoIndex].strip()
         browser.get(url)
         time.sleep(3)
         print(browser.title)
         kt = 0
-        while kt == 0: 
+        count = 0
+        while kt == 0 and count < 30: 
             try:
                 play_element = browser.find_element(By.CLASS_NAME, 'ytp-play-button')
                 play_e = play_element.get_attribute("data-title-no-tooltip")
@@ -71,25 +73,29 @@ def main():
                     kt = 1
                     if play_e != "pause" or play_e == "afspelen":
                         print("key mới: ", play_e)
+                count+=1
+                time.sleep(1)
             except Exception as e:
                 print(e)
-            time.sleep(2)
-
-        duration = get_video_length(url)
-        duration = time_to_seconds(duration)
-        LOOP_TIME = float(duration) * 0.8
-        print("Loop time: ", LOOP_TIME)
-        while LOOP_TIME > 0: 
-            if LOOP_TIME > 600:
-                time.sleep(600)
-                browser.execute_script("window.scrollBy(0, 500);")
-                time.sleep(0.5)
-                # Scroll lên đầu trang
-                browser.execute_script("window.scrollTo(0, 0);")
-                LOOP_TIME = LOOP_TIME - 600
-            else:
-                time.sleep(LOOP_TIME)
-                LOOP_TIME = 0
+                count = 30
+        if count < 30:
+            duration = get_video_length(url)
+            duration = time_to_seconds(duration)
+            LOOP_TIME = float(duration) * 0.8
+            print("Loop time: ", LOOP_TIME)
+            while LOOP_TIME > 0: 
+                if LOOP_TIME > 600:
+                    time.sleep(600)
+                    browser.execute_script("window.scrollBy(0, 500);")
+                    time.sleep(0.5)
+                    # Scroll lên đầu trang
+                    browser.execute_script("window.scrollTo(0, 0);")
+                    LOOP_TIME = LOOP_TIME - 600
+                else:
+                    time.sleep(LOOP_TIME)
+                    LOOP_TIME = 0
+                
+        browser.quit()
 
 if __name__ == "__main__":
     threads = []
