@@ -6,127 +6,97 @@ from selenium.webdriver.common.keys import Keys
 import threading
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import random
+from pytube import YouTube
 
-def view_video():
-    # Tên file chứa danh sách URL video
+def get_video_length(video_url):
+    try:
+        yt = YouTube(video_url)
+        # Lấy thời lượng video trong giây
+        length_in_seconds = yt.length
+        # Chuyển đổi thời lượng thành dạng giờ:phút:giây
+        length_formatted = str(length_in_seconds // 3600).zfill(2) + ":" + str((length_in_seconds % 3600) // 60).zfill(2) + ":" + str(length_in_seconds % 60).zfill(2)
+        return length_formatted
+    except Exception as e:
+        print("Đã xảy ra lỗi:", str(e))
+        return None
+
+def time_to_seconds(time_str):
+    parts = time_str.split(":")
+    if len(parts) == 2:
+        minutes, seconds = parts
+        hours = 0
+    elif len(parts) == 3:
+        hours, minutes, seconds = parts
+    else:
+        return 0
+
+    total_seconds = int(hours) * 3600 + int(minutes) * 60 + int(seconds)
+    return total_seconds
+
+def main():
     videoFileName = "list_url_video.txt"
-
-    # Mở file chứa danh sách URL video
     videoFile = open(videoFileName)
     listVideo = videoFile.readlines()
-
-    # Số lượng video trong danh sách
+    random.shuffle(listVideo)
     NUMBER_OF_VIDEO = len(listVideo)
-    # Số lượng cửa sổ trình duyệt mở đồng thời
-    NUMBER_OF_WINDOW = NUMBER_OF_VIDEO
+    print("VIDEO: " + str(NUMBER_OF_VIDEO))
 
-    # Thời gian delay giữa các lần xem video
-    LOOP_TIME = int(1800/NUMBER_OF_WINDOW)
-
-    print("  WINDOW: " + str(NUMBER_OF_WINDOW))
-    print("  VIDEO: " + str(NUMBER_OF_VIDEO))
-
-    # Khởi tạo index của video và cửa sổ trình duyệt
     videoIndex = 0
-    windowIndex = 0
-    windowCount = 1
 
-    # Tạo các tùy chọn cho trình duyệt Chrome
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')  # Chạy trình duyệt ẩn danh (tùy chọn có thể bật nếu cần)
     options.add_argument('--no-sandbox')  # Chạy trong môi trường không có sandbox
     options.add_argument('--disable-dev-shm-usage')  # Tắt việc sử dụng bộ nhớ chia sẻ
     browser = webdriver.Chrome(options=options)
-    browser.get(listVideo[videoIndex])
-    time.sleep(2)
-    try:
-        element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#top-level-buttons-computed > ytd-toggle-button-renderer > yt-button-shape > button')))
-        shape_element = browser.find_element(By.CSS_SELECTOR, '#top-level-buttons-computed > ytd-toggle-button-renderer > yt-button-shape > button')
-        shape_element.click()
-        print("Random thành công!!")
-    except Exception as e:
-        print(e)
-    time.sleep(2)
-    count = 0 
-    # Vòng lặp chính của chương trình
     while True:
-        # Chuyển đến video tiếp theo trong danh sách
         videoIndex = (videoIndex + 1) % int(NUMBER_OF_VIDEO)
-
-        # Chuyển đến cửa sổ trình duyệt tiếp theo
-        windowIndex = (windowIndex + 1) % int(NUMBER_OF_WINDOW)
-        print(str(windowIndex) + " : " + browser.title)
         url = listVideo[videoIndex].strip()
-
-        # Nếu số lượng cửa sổ đang mở nhỏ hơn quy định, mở thêm cửa sổ mới
-        if windowCount < NUMBER_OF_WINDOW:
-            windowCount = windowCount + 1
-            browser.execute_script("window.open('"+url+"')")
-            time.sleep(5)
+        browser.get(url)
+        time.sleep(3)
+        print(browser.title)
+        kt = 0
+        while kt == 0: 
             try:
                 play_element = browser.find_element(By.CLASS_NAME, 'ytp-play-button')
                 play_e = play_element.get_attribute("data-title-no-tooltip")
                 play_e = play_e.lower()
-                print("lấy thành công element", play_e)
+                # print("lấy thành công element: ", play_e)
                 if play_e == "play" or play_e == "afspelen":
                     action_chains = ActionChains(browser)
-                    action_chains.send_keys(Keys.NULL, 'k')  # Keys.NULL để tránh hiệu ứng của SPACE
+                    action_chains.send_keys(Keys.NULL, 'k')
                     action_chains.perform()
-                    print("Click thành công")
+                    # print("Click thành công")
+                else: 
+                    kt = 1
             except Exception as e:
                 print(e)
-            time.sleep(5)
-        else:
-            if count < 3:
-                # Chuyển đến cửa sổ trình duyệt đã mở
-                browser.switch_to.window(browser.window_handles[windowIndex])
-                time.sleep(0.5)
-                try:
-                    play_element = browser.find_element(By.CLASS_NAME, 'ytp-play-button')
-                    play_e = play_element.get_attribute("data-title-no-tooltip")
-                    play_e = play_e.lower()
-                    print("lấy thành công element", play_e)
-                    if play_e == "play" or play_e == "afspelen":
-                        action_chains = ActionChains(browser)
-                        action_chains.send_keys(Keys.NULL, 'k')  # Keys.NULL để tránh hiệu ứng của SPACE
-                        action_chains.perform()
-                        print("Click thành công")
-                except Exception as e:
-                    print(e)
-                time.sleep(5)
-                count+=1
-            else:
-                # Chuyển đến cửa sổ trình duyệt đã mở
-                browser.switch_to.window(browser.window_handles[windowIndex])
-                time.sleep(0.5)
-                # Scroll xuống đến cuối trang
+            time.sleep(2)
+
+        duration = get_video_length(url)
+        duration = time_to_seconds(duration)
+        LOOP_TIME = float(duration) * 0.8
+        print("Loop time: ", LOOP_TIME)
+        while LOOP_TIME > 0: 
+            if LOOP_TIME > 600:
+                time.sleep(600)
                 browser.execute_script("window.scrollBy(0, 500);")
                 time.sleep(0.5)
                 # Scroll lên đầu trang
                 browser.execute_script("window.scrollTo(0, 0);")
-                # Đợi một khoảng thời gian trước khi chuyển sang video tiếp theo\
-                try:
-                    play_element = browser.find_element(By.CLASS_NAME, 'ytp-play-button')
-                    play_e = play_element.get_attribute("data-title-no-tooltip")
-                    play_e = play_e.lower()
-                    print("lấy thành công element", play_e)
-                    if play_e == "play" or play_e == "afspelen":
-                        action_chains = ActionChains(browser)
-                        action_chains.send_keys(Keys.NULL, 'k')  # Keys.NULL để tránh hiệu ứng của SPACE
-                        action_chains.perform()
-                        print("Click thành công")
-                except Exception as e:
-                    print(e)
+                LOOP_TIME = LOOP_TIME - 600
+            else:
                 time.sleep(LOOP_TIME)
+                LOOP_TIME = 0
 
-threads = []
+if __name__ == "__main__":
+    threads = []
 
-# Tạo và khởi chạy 3 luồng
-for _ in range(3):
-    thread = threading.Thread(target=view_video)
-    threads.append(thread)
-    thread.start()
+    for _ in range(5):
+        thread = threading.Thread(target=main)
+        threads.append(thread)
+        thread.start()
 
-# Chờ cho tất cả các luồng kết thúc (nếu cần)
-for thread in threads:
-    thread.join()
+    # Chờ cho tất cả các luồng kết thúc (nếu cần)
+    for thread in threads:
+        thread.join()
