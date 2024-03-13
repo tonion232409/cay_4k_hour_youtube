@@ -61,7 +61,7 @@ def main():
                 play_element = browser.find_element(By.CLASS_NAME, 'ytp-play-button')
                 play_e = play_element.get_attribute("data-title-no-tooltip")
                 play_e = play_e.lower()
-                # print("lấy thành công element: ", play_e)
+                print("lấy thành công element: ", play_e)
                 if play_e == "play" or play_e == "afspelen":
                     action_chains = ActionChains(browser)
                     action_chains.send_keys(Keys.NULL, 'k')
