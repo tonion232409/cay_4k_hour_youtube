@@ -71,7 +71,7 @@ def main():
                     # print("Click thành công")
                 else: 
                     kt = 1
-                    if play_e != "pause" or play_e == "afspelen":
+                    if play_e != "pause" or play_e == "暫停":
                         print("key mới: ", play_e)
                 count+=1
                 time.sleep(1)
